@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-// --- SUB-COMPONENT: SEAT STATUS (ADMISSION) ---
+// --- SUB-COMPONENT: SEAT STATUS ---
 const SeatStatus = () => {
+    const navigate = useNavigate();
     // Simulating fetching seat status from database
     const [status, setStatus] = useState({ state: 'none', seatNumber: null }); 
-
-    const handleRequest = () => {
-        // fetch('/api/student/request-seat', { method: 'POST' })
-        setStatus({ state: 'payment_pending', seatNumber: 'A-101' }); // Simulated response
-        alert("Seat Requested Successfully! Please pay to confirm.");
-    };
-
-    const handlePayment = () => {
-        // fetch('/api/student/confirm-payment', { method: 'POST' })
-        setStatus({ state: 'approved', seatNumber: 'A-101' });
-        alert("Payment Successful! Seat Confirmed.");
-    };
 
     return (
         <div className="bg-white p-6 rounded-lg shadow text-center">
@@ -23,8 +13,12 @@ const SeatStatus = () => {
             
             {status.state === 'none' && (
                 <div>
-                    <p className="text-lg mb-4">You have not been assigned a seat yet.</p>
-                    <button onClick={handleRequest} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
+                    <p className="text-lg mb-4 text-gray-600">You have not been assigned a seat yet.</p>
+                    {/* IMPROVEMENT: Navigates to the form instead of alerting */}
+                    <button 
+                        onClick={() => navigate('/hallSeatApplication')} 
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow transition-transform hover:scale-105"
+                    >
                         Request a Seat
                     </button>
                 </div>
@@ -34,7 +28,7 @@ const SeatStatus = () => {
                 <div>
                     <p className="text-lg text-yellow-600 font-bold">Seat Assigned: {status.seatNumber}</p>
                     <p className="mb-4">Status: Payment Pending</p>
-                    <button onClick={handlePayment} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
                         Pay Now to Confirm
                     </button>
                 </div>
@@ -50,9 +44,119 @@ const SeatStatus = () => {
     );
 };
 
+// --- SUB-COMPONENT: MEAL MANAGER (RESTORED LOGIC) ---
+const MealManager = () => {
+    const [days, setDays] = useState([]);
+
+    useEffect(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const next30Days = [];
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dateString = date.toISOString().split('T')[0];
+            
+            const savedMeals = JSON.parse(localStorage.getItem(dateString)) || {
+                breakfast: false,
+                lunch: false,
+                dinner: false,
+                done: false
+            };
+
+            next30Days.push({
+                dateObject: date,
+                dateString: dateString,
+                ...savedMeals
+            });
+        }
+        setDays(next30Days);
+    }, []);
+
+    const handleCheck = (index, mealType) => {
+        const newDays = [...days];
+        newDays[index][mealType] = !newDays[index][mealType];
+        setDays(newDays);
+    };
+
+    const handleSave = (index) => {
+        const day = days[index];
+        const dataToSave = {
+            breakfast: day.breakfast,
+            lunch: day.lunch,
+            dinner: day.dinner,
+            done: true
+        };
+        localStorage.setItem(day.dateString, JSON.stringify(dataToSave));
+        
+        const newDays = [...days];
+        newDays[index].done = true;
+        setDays(newDays);
+        alert(`Meals for ${day.dateObject.toDateString()} saved!`);
+    };
+
+    return (
+        <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-2xl font-bold mb-4 text-gray-700">Meal Manager</h2>
+            <p className="text-sm text-gray-500 mb-6">Select meals for upcoming days. Past days are locked.</p>
+
+            <div className="space-y-0 max-h-[500px] overflow-y-auto border rounded-lg">
+                {days.map((day, index) => {
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    const isPastOrToday = day.dateObject <= today;
+                    const rowClass = isPastOrToday ? 'bg-gray-50 opacity-60' : 'bg-white hover:bg-blue-50';
+
+                    return (
+                        <div key={day.dateString} className={`flex flex-col sm:flex-row items-center justify-between p-4 border-b border-gray-100 ${rowClass}`}>
+                            <div className="w-full sm:w-1/4 mb-2 sm:mb-0 text-center sm:text-left">
+                                <p className="font-bold text-gray-800">
+                                    {day.dateObject.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    {day.dateObject.toLocaleDateString(undefined, { weekday: 'long' })}
+                                </p>
+                            </div>
+
+                            <div className="w-full sm:w-1/2 flex justify-center space-x-4 mb-2 sm:mb-0">
+                                {['breakfast', 'lunch', 'dinner'].map((meal) => (
+                                    <label key={meal} className="flex items-center space-x-1 cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            className="checkbox checkbox-xs checkbox-primary"
+                                            checked={day[meal]}
+                                            onChange={() => handleCheck(index, meal)}
+                                            disabled={isPastOrToday}
+                                        />
+                                        <span className="capitalize text-sm">{meal.charAt(0).toUpperCase() + meal.slice(1)}</span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            <div className="w-full sm:w-1/4 text-center sm:text-right">
+                                <button 
+                                    onClick={() => handleSave(index)}
+                                    disabled={isPastOrToday}
+                                    className={`text-xs font-bold py-1 px-3 rounded ${
+                                        day.done 
+                                        ? 'bg-green-100 text-green-700' 
+                                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                    }`}
+                                >
+                                    {day.done ? 'Saved' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 // --- SUB-COMPONENT: NOTICES ---
 const Notices = () => {
-    // Static data for now (replace with fetch later)
     const notices = [
         { id: 1, title: "Hall Fest 2025", date: "2025-03-24", content: "The annual Hall Fest will be held next week!" },
         { id: 2, title: "Dining Maintenance", date: "2025-03-20", content: "Dining hall will be closed for maintenance on Friday." }
@@ -81,7 +185,6 @@ const Complaints = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if(!complaintText) return;
-        // fetch('/api/student/complaints', ...)
         alert("Complaint Submitted: " + complaintText);
         setComplaintText("");
     };
@@ -105,46 +208,36 @@ const Complaints = () => {
     );
 };
 
-// --- SUB-COMPONENT: MEAL MANAGER (Existing Logic) ---
-const MealManager = () => {
-    // ... (Paste your previous Meal Manager logic here, or keep it simple for now)
-    return (
-        <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4 text-gray-700">Meal Manager</h2>
-            <p>Meal planning functionality loaded here...</p> 
-            {/* You can copy-paste the full meal logic from the previous step here if you want */}
-        </div>
-    );
-};
-
 // --- MAIN DASHBOARD COMPONENT ---
 const Dashboard = () => {
-    const [activeTab, setActiveTab] = useState('status'); // Default tab
+    const [activeTab, setActiveTab] = useState('status'); 
+    const navigate = useNavigate(); // IMPROVEMENT: Using React Router hook
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
                 <header className="bg-white shadow-md rounded-lg p-4 mb-6 flex justify-between items-center">
                     <h1 className="text-xl font-bold text-gray-800">Student Portal</h1>
-
-                    <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => window.location.href='/studentProfile'}>Profile</button>
-                    <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => window.location.href='/login'}>Logout</button>
+                    <div className="space-x-2">
+                        {/* IMPROVEMENT: navigate instead of window.location.href */}
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors" onClick={() => navigate('/studentProfile')}>Profile</button>
+                        <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors" onClick={() => navigate('/login')}>Logout</button>
+                    </div>
                 </header>
 
                 {/* Tab Navigation */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <button onClick={() => setActiveTab('status')} className={`p-4 rounded-lg font-semibold shadow transition ${activeTab === 'status' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`}>
-                        Seat Status
-                    </button>
-                    <button onClick={() => setActiveTab('meals')} className={`p-4 rounded-lg font-semibold shadow transition ${activeTab === 'meals' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`}>
-                        Meal Plan
-                    </button>
-                    <button onClick={() => setActiveTab('notices')} className={`p-4 rounded-lg font-semibold shadow transition ${activeTab === 'notices' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`}>
-                        Notices
-                    </button>
-                    <button onClick={() => setActiveTab('complaints')} className={`p-4 rounded-lg font-semibold shadow transition ${activeTab === 'complaints' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`}>
-                        Complaints
-                    </button>
+                    {['status', 'meals', 'notices', 'complaints'].map((tab) => (
+                        <button 
+                            key={tab}
+                            onClick={() => setActiveTab(tab)} 
+                            className={`p-4 rounded-lg font-semibold shadow transition capitalize ${
+                                activeTab === tab ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            {tab === 'status' ? 'Seat Status' : tab}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Tab Content */}

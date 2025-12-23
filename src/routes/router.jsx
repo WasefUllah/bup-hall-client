@@ -7,7 +7,7 @@ import SignUp from "../Page/SignUp/SignUp"; // <--- Import SignUp
 import AdminDashboard from "../Page/AdminDashboard/AdminDashboard"; // <--- Import this
 import HallSeatApplicationForm from "../Page/Dashboard/HallSeatApplicationForm";
 import StudentProfile from "../Page/Dashboard/StudentProfile";
-
+import PrivateRoute from "./PrivateRoute";
 
 
 export const router = createBrowserRouter([
@@ -25,18 +25,18 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/hallSeatApplication",
-                element: <HallSeatApplicationForm />,
+                element: <PrivateRoute><HallSeatApplicationForm /></PrivateRoute>,
             },
             {
                 path: "/studentProfile",
-                element: <StudentProfile />,
+                element: <PrivateRoute><StudentProfile /></PrivateRoute>, // PROTECTED
             },
             { path: "/signup", element: <SignUp /> },
             {
                 path: "/dashboard",
-                element: <Dashboard />,
+                element: <PrivateRoute><Dashboard /></PrivateRoute>, // PROTECTED
             },
-            { path: "/admin", element: <AdminDashboard /> }, // <--- Add this
+            { path: "/admin", element: <PrivateRoute><AdminDashboard /></PrivateRoute> }, // <--- Add this
         ],
     },
 ]);
