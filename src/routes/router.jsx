@@ -5,6 +5,8 @@ import Login from "../Page/Login/Login";
 import Dashboard from "../Page/Dashboard/Dashboard";
 import SignUp from "../Page/SignUp/SignUp"; // <--- Import SignUp
 import AdminDashboard from "../Page/AdminDashboard/AdminDashboard"; // <--- Import this
+import HallSeatApplicationForm from "../Page/Dashboard/HallSeatApplicationForm";
+import StudentProfile from "../Page/Dashboard/StudentProfile";
 
 
 export const router = createBrowserRouter([
@@ -19,6 +21,14 @@ export const router = createBrowserRouter([
             {
                 path: "/login",
                 element: <Login />,
+            },
+            {
+                path: "/hallSeatApplication",
+                element: <HallSeatApplicationForm />,
+            },
+            {
+                path: "/studentProfile",
+                element: <StudentProfile />,
             },
             { path: "/signup", element: <SignUp /> },
             {
