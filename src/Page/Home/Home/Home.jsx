@@ -1,253 +1,122 @@
-import React, { useState, useEffect } from "react";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-    // --- SLIDESHOW LOGIC ---
-    // We use React state to keep track of which image is showing
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-    const images = [
-        "https://bup.edu.bd/public/upload/slider/20250324_1742832735693.jpg",
-        "https://bup.edu.bd/public/upload/slider/20250324_1742832599507.jpg",
-        "https://bup.edu.bd/public/upload/slider/20250324_1742832629873.jpg",
-        "https://bup.edu.bd/public/upload/slider/20250324_1742832654632.jpg",
-    ];
-
-    // This effect runs a timer to change the image every 4 seconds
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            setCurrentImageIndex(
-                (prevIndex) => (prevIndex + 1) % images.length
-            );
-        }, 4000);
-
-        // Cleanup the timer when the component closes
-        return () => clearInterval(intervalId);
-    }, [images.length]);
+    const navigate = useNavigate();
 
     return (
-        <main>
-            {/* --- HERO SECTION --- */}
-            <section id="home" className="page-section p-0">
-                <div
-                    className="hero min-h-[calc(100vh-4rem)] relative overflow-hidden"
-                    id="hero-slideshow"
-                >
-                    {/* The Slides Container */}
-                    <div
-                        className="slides-container absolute top-0 left-0 h-full w-full flex transition-all duration-1000 ease-in-out"
-                        style={{ marginLeft: `-${currentImageIndex * 100}%` }}
-                    >
-                        {images.map((img, index) => (
-                            <img
-                                key={index}
-                                src={img}
-                                className="slide-image min-w-full h-full object-cover"
-                                alt={`Slide ${index}`}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Dark Overlay */}
-                    <div className="hero-overlay bg-black bg-opacity-60 absolute inset-0"></div>
-
-                    {/* Text Content */}
-                    <div className="hero-content text-neutral-content text-center relative z-10 flex flex-col items-center justify-center h-full">
-                        <div className="max-w-md">
-                            <h1 className="mb-5 text-5xl font-bold text-white">
-                                Welcome to BUP Hall
-                            </h1>
-                            <p className="mb-5 text-gray-200">
-                                Experience a comfortable and secure stay with
-                                our top-notch facilities and dedicated support.
-                                Your home away from home.
-                            </p>
-                            <a href="#admission" className="btn btn-primary">
-                                Get Started
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- HALL FACILITIES --- */}
-            <section
-                id="hall-facility"
-                className="page-section py-16 bg-gray-50"
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+            
+            {/* 1. HERO SECTION */}
+            <div 
+                className="relative h-[600px] flex items-center justify-center bg-cover bg-center"
+                style={{ 
+                    backgroundImage: "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop')" 
+                    // Note: You can replace this URL with a real photo of BUP Campus later
+                }}
             >
-                <div className="container mx-auto p-4 md:p-8">
-                    <header className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-                            Hall Facilities
-                        </h2>
-                        <p className="mt-4 text-lg text-slate-600">
-                            Discover the benefits of living on campus.
-                        </p>
-                    </header>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-10 lg:gap-y-12">
-                        {/* Feature Item 1 */}
-                        <div className="feature-item p-4 bg-white rounded-xl shadow-md hover:-translate-y-1 transition-transform flex items-start">
-                            <div className="feature-icon-wrapper mr-4 bg-blue-50 text-blue-500 w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                                <i className="fas fa-brain text-xl"></i>
-                            </div>
-                            <div className="feature-content">
-                                <h3 className="feature-title text-xl font-bold mb-1">
-                                    Smart Living Scope
-                                </h3>
-                                <p className="feature-description text-gray-600 text-sm">
-                                    Stay closer to the library, faculty, and
-                                    your peers.
-                                </p>
-                            </div>
-                        </div>
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-black bg-opacity-60"></div>
 
-                        {/* Feature Item 2 */}
-                        <div className="feature-item p-4 bg-white rounded-xl shadow-md hover:-translate-y-1 transition-transform flex items-start">
-                            <div className="feature-icon-wrapper mr-4 bg-blue-50 text-blue-500 w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                                <i className="fas fa-map-marker-alt text-xl"></i>
-                            </div>
-                            <div className="feature-content">
-                                <h3 className="feature-title text-xl font-bold mb-1">
-                                    Close to the Class
-                                </h3>
-                                <p className="feature-description text-gray-600 text-sm">
-                                    You're just minutes away from your classes.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Feature Item 3 */}
-                        <div className="feature-item p-4 bg-white rounded-xl shadow-md hover:-translate-y-1 transition-transform flex items-start">
-                            <div className="feature-icon-wrapper mr-4 bg-blue-50 text-blue-500 w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                                <i className="fas fa-shield-alt text-xl"></i>
-                            </div>
-                            <div className="feature-content">
-                                <h3 className="feature-title text-xl font-bold mb-1">
-                                    Safety & Security
-                                </h3>
-                                <p className="feature-description text-gray-600 text-sm">
-                                    24/7 security staff and CCTV surveillance.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Feature Item 4 */}
-                        <div className="feature-item p-4 bg-white rounded-xl shadow-md hover:-translate-y-1 transition-transform flex items-start">
-                            <div className="feature-icon-wrapper mr-4 bg-blue-50 text-blue-500 w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                                <i className="fas fa-wifi text-xl"></i>
-                            </div>
-                            <div className="feature-content">
-                                <h3 className="feature-title text-xl font-bold mb-1">
-                                    Wireless Connectivity
-                                </h3>
-                                <p className="feature-description text-gray-600 text-sm">
-                                    Seamless Wi-Fi access throughout the hall.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- IN-ROOM FACILITIES --- */}
-            <section id="in-room-facility" className="page-section py-16">
-                <div className="container mx-auto p-4 md:p-8">
-                    <header className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-                            In-Room Facilities
-                        </h2>
-                        <p className="mt-4 text-lg text-slate-600">
-                            Comfort and convenience, right in your room.
-                        </p>
-                    </header>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-10">
-                        <div className="amenity-category">
-                            <h2 className="category-title text-xl font-semibold border-b-2 border-indigo-100 pb-2 mb-3">
-                                Furnishings
-                            </h2>
-                            <ul className="amenity-list space-y-2">
-                                <li className="flex items-center text-gray-600">
-                                    <i className="fas fa-bed text-indigo-600 mr-3 w-5 text-center"></i>
-                                    One Bed per Student
-                                </li>
-                                <li className="flex items-center text-gray-600">
-                                    <i className="fas fa-chair text-indigo-600 mr-3 w-5 text-center"></i>
-                                    Study table & Chair
-                                </li>
-                                <li className="flex items-center text-gray-600">
-                                    <i className="fas fa-lightbulb text-indigo-600 mr-3 w-5 text-center"></i>
-                                    Tube lights & Fan
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="amenity-category">
-                            <h2 className="category-title text-xl font-semibold border-b-2 border-indigo-100 pb-2 mb-3">
-                                Utilities
-                            </h2>
-                            <ul className="amenity-list space-y-2">
-                                <li className="flex items-center text-gray-600">
-                                    <i className="fas fa-bolt text-indigo-600 mr-3 w-5 text-center"></i>
-                                    Electricity Facility
-                                </li>
-                                <li className="flex items-center text-gray-600">
-                                    <i className="fas fa-wifi text-indigo-600 mr-3 w-5 text-center"></i>
-                                    Broadband and Wi-Fi
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- ADMISSION --- */}
-            <section id="admission" className="page-section py-16 bg-white">
-                <div className="admission-container max-w-4xl mx-auto bg-white shadow-xl rounded-lg p-6 md:p-10 border border-gray-100">
-                    <header className="text-center mb-8">
-                        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-                            Admissions
-                        </h2>
-                        <p className="mt-4 text-lg text-slate-600">
-                            Your guide to joining the BUP Hall community.
-                        </p>
-                    </header>
-                    <div className="mb-8 pb-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h2 className="text-2xl font-semibold text-slate-700">
-                            Apply for a seat
-                        </h2>
-                        <a
-                            href="/login"
-                            className="btn btn-warning text-white font-bold"
+                {/* Content */}
+                <div className="relative z-10 text-center text-white px-4 max-w-4xl">
+                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 leading-tight">
+                        Welcome to <span className="text-blue-400">BUP Hall</span> Management System
+                    </h1>
+                    <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+                        Streamlining residential life for the students of Bangladesh University of Professionals. 
+                        Apply for seats, manage meals, and pay bills — all in one place.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button 
+                            onClick={() => navigate('/login')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg"
                         >
-                            BUP HALL PORTAL{" "}
-                            <i className="fas fa-external-link-alt ml-2"></i>
-                        </a>
-                    </div>
-                    <div className="mb-8 pb-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h2 className="text-2xl font-semibold text-slate-700">
-                            Application
-                        </h2>
-                        <a
-                            href="/hallSeatApplication"
-                            className="btn btn-warning text-white font-bold"
+                            Student Login
+                        </button>
+                        <button 
+                            onClick={() => navigate('/signup')}
+                            className="bg-transparent border-2 border-white hover:bg-white hover:text-black text-white font-bold py-3 px-8 rounded-full transition-all"
                         >
-                            Admission application{" "}
-                            <i className="fas fa-external-link-alt ml-2"></i>
-                        </a>
+                            New Registration
+                        </button>
                     </div>
-                    <div>
-                        <h3 className="text-xl font-semibold mb-2">
-                            Admission Eligibility
-                        </h3>
-                        <ul className="list-disc pl-5 space-y-2 text-slate-600">
-                            <li>Must be a regular student of BUP.</li>
-                            <li>
-                                Minimum SGPA of 2.5 for readmission/existing
-                                students.
-                            </li>
-                        </ul>
+                </div>
+            </div>
+
+            {/* 2. FEATURES SECTION */}
+            <section className="py-16 px-4 bg-white">
+                <div className="max-w-6xl mx-auto text-center">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Use This Portal?</h2>
+                    <p className="text-gray-500 mb-12 max-w-2xl mx-auto">
+                        We have digitized the entire manual process to make your hall life easier and more transparent.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Feature 1 */}
+                        <div className="p-8 bg-blue-50 rounded-xl hover:shadow-xl transition-shadow border border-blue-100">
+                            <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-4 mx-auto">
+                                🪑
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Easy Seat Allocation</h3>
+                            <p className="text-gray-600">
+                                No more running to the office. Submit your seat application online and track your approval status in real-time.
+                            </p>
+                        </div>
+
+                        {/* Feature 2 */}
+                        <div className="p-8 bg-green-50 rounded-xl hover:shadow-xl transition-shadow border border-green-100">
+                            <div className="w-14 h-14 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-2xl mb-4 mx-auto">
+                                🍲
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Smart Meal Manager</h3>
+                            <p className="text-gray-600">
+                                Turn your meal plan on or off from your phone. Reduce food waste and save money on your dining bill.
+                            </p>
+                        </div>
+
+                        {/* Feature 3 */}
+                        <div className="p-8 bg-purple-50 rounded-xl hover:shadow-xl transition-shadow border border-purple-100">
+                            <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-2xl mb-4 mx-auto">
+                                📢
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Digital Notice Board</h3>
+                            <p className="text-gray-600">
+                                Never miss an important announcement. Get instant updates on Hall Fests, Maintenance, and Holidays.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
-        </main>
+
+            {/* 3. STATS SECTION */}
+            <section className="py-12 bg-blue-900 text-white">
+                <div className="max-w-6xl mx-auto px-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                        <div>
+                            <p className="text-4xl font-bold mb-1">2000+</p>
+                            <p className="text-blue-200 text-sm uppercase tracking-wider">Residents</p>
+                        </div>
+                        <div>
+                            <p className="text-4xl font-bold mb-1">4</p>
+                            <p className="text-blue-200 text-sm uppercase tracking-wider">Halls</p>
+                        </div>
+                        <div>
+                            <p className="text-4xl font-bold mb-1">100%</p>
+                            <p className="text-blue-200 text-sm uppercase tracking-wider">Digitized</p>
+                        </div>
+                        <div>
+                            <p className="text-4xl font-bold mb-1">24/7</p>
+                            <p className="text-blue-200 text-sm uppercase tracking-wider">Support</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 4. CONTACT & FOOTER SECTION */}
+            
+
+        </div>
     );
 };
 

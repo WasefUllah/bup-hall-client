@@ -1,149 +1,176 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../providers/AuthProvider";
+import { db } from "../../firebase/firebase.config";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentProfile() {
-    // Mock data based on the requirements
-    const studentData = {
-        name: "Tanvir Ahmed",
-        rollNo: "202414055",
-        department: "Information & Communication Technology",
-        year: "2nd Year, 1st Semester",
-        gender: "Male",
-        mobile: "017XX-XXXXXX",
-        email: "tanvir.ict@bup.edu.bd",
-        hallName: "Miran Hall",
-        roomNo: "402-B",
-        profilePic: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tanvir", // Placeholder avatar
-    };
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
+    
+    // State to hold combined profile data
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            if (!user) return;
+
+            try {
+                // 1. Fetch Personal Identity (from 'users' collection)
+                const userDocRef = doc(db, "users", user.uid);
+                const userSnapshot = await getDoc(userDocRef);
+                const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+
+                // 2. Fetch Accommodation & Guardian Info (from 'applications' collection)
+                // We look for the most recent application
+                const q = query(collection(db, "applications"), where("studentEmail", "==", user.email));
+                const appSnapshot = await getDocs(q);
+                
+                let appData = {};
+                let seatStatus = "Not Applied";
+                
+                if (!appSnapshot.empty) {
+                    // Get the latest application
+                    const docData = appSnapshot.docs[0].data();
+                    appData = docData;
+                    seatStatus = docData.status;
+                }
+
+                // 3. Combine Data
+                setProfile({
+                    ...userData,       // Name, ID, Dept, Batch...
+                    ...appData,        // Guardian, Address, Approved Seat...
+                    seatStatus         // pending, approved, or none
+                });
+
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfileData();
+    }, [user]);
+
+    if (loading) return <div className="text-center mt-20 text-blue-600 font-bold">Loading Profile...</div>;
+    if (!profile) return <div className="text-center mt-20">No profile found.</div>;
+
+    // Helper to handle missing data gracefully
+    const getVal = (val) => val || "N/A";
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-start">
-            <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-                {/* Top Header/Cover Area */}
-                <div className="h-32 bg-blue-700 w-full"></div>
-
+        <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex justify-center items-start">
+            <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                
+                {/* 1. Header Section */}
+                <div className="h-40 bg-gradient-to-r from-blue-800 to-indigo-900 w-full relative">
+                    <button onClick={() => navigate('/dashboard')} className="absolute top-4 left-4 text-white bg-black/30 px-4 py-2 rounded hover:bg-black/50">
+                        ← Back to Dashboard
+                    </button>
+                </div>
+                
                 <div className="px-8 pb-10">
                     <div className="relative -mt-16 flex flex-col md:flex-row md:items-end gap-6 border-b border-gray-100 pb-8">
-                        {/* Profile Picture */}
+                        {/* Avatar */}
                         <div className="avatar">
-                            <div className="w-32 h-32 rounded-2xl border-4 border-white shadow-md bg-white">
-                                <img
-                                    src={studentData.profilePic}
-                                    alt="Student Profile"
-                                />
+                            <div className="w-32 h-32 rounded-2xl border-4 border-white shadow-md bg-white overflow-hidden">
+                                <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${profile.name || "User"}`} alt="Avatar" />
                             </div>
                         </div>
-
-                        {/* Basic Info Header */}
+                        {/* Name & Badge */}
                         <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900">
-                                {studentData.name}
-                            </h1>
-                            <p className="text-blue-600 font-semibold text-lg">
-                                {studentData.department}
-                            </p>
+                            <h1 className="text-3xl font-bold text-gray-900">{getVal(profile.name)}</h1>
+                            <p className="text-blue-600 font-semibold text-lg">{getVal(profile.department)} ({getVal(profile.program)})</p>
                             <div className="flex flex-wrap gap-2 mt-2">
-                                <span className="badge badge-outline border-gray-400 font-medium px-3 py-3">
-                                    Roll: {studentData.rollNo}
-                                </span>
-                                <span className="badge badge-outline border-gray-400 font-medium px-3 py-3">
-                                    {studentData.year}
-                                </span>
+                                <span className="badge badge-lg bg-blue-100 text-blue-800 border-none font-medium">ID: {getVal(profile.studentId)}</span>
+                                <span className="badge badge-lg bg-gray-100 text-gray-800 border-none font-medium">{getVal(profile.batch)}</span>
+                                <span className="badge badge-lg bg-red-50 text-red-600 border-red-100 font-medium">🩸 {getVal(profile.bloodGroup)}</span>
                             </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-3 mt-4 md:mt-0">
-                            <button className="btn btn-outline border-blue-600 text-blue-600 hover:bg-blue-50 px-6">
-                                Show Bill
-                            </button>
-                            <button className="btn btn-primary text-white shadow-lg px-6">
-                                Pay Bill
-                            </button>
                         </div>
                     </div>
 
-                    {/* Detailed Info Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                        {/* LEFT COLUMN: Academic & Contact */}
-                        <div className="space-y-6">
-                            <h2 className="text-sm uppercase tracking-wider font-bold text-gray-400 mb-4">
-                                Academic & Contact
-                            </h2>
+                    {/* 2. Grid Layout for Details */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                        
+                        {/* LEFT: Personal & Guardian Info */}
+                        <div className="lg:col-span-2 space-y-8">
+                            
+                            {/* Personal Details */}
+                            <section>
+                                <h3 className="text-sm uppercase tracking-wider font-bold text-gray-400 mb-4 border-b pb-2">Personal Information</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                                    <div><span className="block text-xs text-gray-500">Email</span><span className="font-medium">{getVal(profile.email)}</span></div>
+                                    <div><span className="block text-xs text-gray-500">Religion</span><span className="font-medium">{getVal(profile.religion)}</span></div>
+                                    <div className="md:col-span-2"><span className="block text-xs text-gray-500">Permanent Address</span><span className="font-medium">{getVal(profile.permanentAddress)}</span></div>
+                                </div>
+                            </section>
 
-                            <div className="flex flex-col gap-1 border-l-4 border-blue-500 pl-4">
-                                <span className="text-xs text-gray-500 font-bold">
-                                    Email Address
-                                </span>
-                                <span className="text-gray-900 font-medium">
-                                    {studentData.email}
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col gap-1 border-l-4 border-blue-500 pl-4">
-                                <span className="text-xs text-gray-500 font-bold">
-                                    Mobile
-                                </span>
-                                <span className="text-gray-900 font-medium">
-                                    {studentData.mobile}
-                                </span>
-                            </div>
-
-                            <div className="flex flex-col gap-1 border-l-4 border-blue-500 pl-4">
-                                <span className="text-xs text-gray-500 font-bold">
-                                    Gender
-                                </span>
-                                <span className="text-gray-900 font-medium">
-                                    {studentData.gender}
-                                </span>
-                            </div>
+                            {/* Guardian Info */}
+                            <section>
+                                <h3 className="text-sm uppercase tracking-wider font-bold text-gray-400 mb-4 border-b pb-2">Emergency & Guardian</h3>
+                                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div><span className="block text-xs text-red-500 font-bold">Local Guardian Name</span><span className="font-medium text-gray-800">{getVal(profile.fatherName)}</span></div>
+                                        <div><span className="block text-xs text-red-500 font-bold">Contact Number</span><span className="font-medium text-gray-800">{getVal(profile.fatherMobile)}</span></div>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
 
-                        {/* RIGHT COLUMN: Hall Allocation */}
-                        <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                            <h2 className="text-sm uppercase tracking-wider font-bold text-blue-400 mb-4">
-                                Hall Allocation Details
-                            </h2>
+                        {/* RIGHT: Accommodation & Finance (Cards) */}
+                        <div className="space-y-6">
+                            
+                            {/* Accommodation Card */}
+                            <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 shadow-sm">
+                                <h2 className="text-sm uppercase tracking-wider font-bold text-blue-600 mb-4 flex items-center gap-2">
+                                    🏢 Accommodation
+                                </h2>
+                                
+                                {profile.status === 'approved' ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center border-b border-blue-200 pb-2">
+                                            <span className="text-sm text-gray-600">Hall Name</span>
+                                            <span className="font-bold text-gray-900">Miran Hall</span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b border-blue-200 pb-2">
+                                            <span className="text-sm text-gray-600">Seat Number</span>
+                                            <span className="text-xl font-bold text-green-600">{profile.seatNumber}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-2">
+                                            <span className="text-sm text-gray-600">Status</span>
+                                            <span className="badge badge-success text-white">Resident</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <p className="text-gray-500 mb-3">No active seat allocation.</p>
+                                        <button onClick={() => navigate('/hallSeatApplication')} className="btn btn-sm btn-outline btn-primary">Apply Now</button>
+                                    </div>
+                                )}
+                            </div>
 
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-blue-600 font-bold">
-                                            Allocated Hall
-                                        </span>
-                                        <span className="text-xl font-bold text-gray-900">
-                                            {studentData.hallName}
-                                        </span>
+                            {/* Financial Status Card */}
+                            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                                <h2 className="text-sm uppercase tracking-wider font-bold text-gray-600 mb-4">
+                                    💳 Financial Status
+                                </h2>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm">Seat Rent</span>
+                                        <span className="badge badge-warning text-xs">Due</span>
                                     </div>
-                                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border border-blue-100">
-                                        🏢
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm">Dining Bill</span>
+                                        <span className="badge badge-success text-white text-xs">Paid</span>
                                     </div>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-blue-600 font-bold">
-                                            Room Number
-                                        </span>
-                                        <span className="text-xl font-bold text-gray-900">
-                                            {studentData.roomNo}
-                                        </span>
-                                    </div>
-                                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border border-blue-100">
-                                        🔑
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 border-t border-blue-200">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">
-                                            Current Status:
-                                        </span>
-                                        <span className="text-green-600 font-bold italic">
-                                            Active Resident
-                                        </span>
+                                    <div className="mt-4 pt-3 border-t">
+                                        <button className="btn btn-block btn-primary btn-sm">Pay Dues</button>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
