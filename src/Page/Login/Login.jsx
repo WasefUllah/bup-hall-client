@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Hook to move between pages
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
     const [studentId, setStudentId] = useState('');
@@ -21,18 +21,24 @@ const Login = () => {
         setIsLoading(true);
         setMessage('Attempting to log in...');
 
-        // Simulate API call (Logic from your script.js)
+        // Simulate API call
         setTimeout(() => {
             setIsLoading(false);
+            
+            // Check if user is admin
             if (studentId === "admin" && password === "password") {
+                setMessage('Login successful! Redirecting to Admin Panel...');
+                navigate('/admin');
+            } 
+            // Check if user is student (demo logic)
+            else if (studentId !== "" && password !== "") {
                 setMessage('Login successful! Redirecting...');
-                // Redirect to dashboard (we will build this next)
-                navigate('/dashboard'); 
+                navigate('/dashboard');
             } else {
                 setMessage('Invalid Student ID or Password.');
             }
         }, 1000);
-    };
+    }; // <--- THIS WAS MISSING (Closes handleLogin)
 
     return (
         <section id="login" className="page-section">
@@ -80,6 +86,8 @@ const Login = () => {
                             </div>
                             <div className="text-sm"><a href="#" className="font-medium text-sky-600 hover:text-sky-500">Forgot password?</a></div>
                         </div>
+                        
+                        {/* Login Button */}
                         <div>
                             <button 
                                 type="submit" 
@@ -89,6 +97,13 @@ const Login = () => {
                                 <i className="fas fa-sign-in-alt mr-2 mt-0.5"></i> 
                                 {isLoading ? 'Logging in...' : 'Sign In'}
                             </button>
+                        </div>
+
+                        {/* Register Link */}
+                        <div className="mt-4 text-center">
+                            <p className="text-sm text-gray-600">
+                                Don't have an account? <Link to="/signup" className="text-blue-600 hover:underline">Register here</Link>
+                            </p>
                         </div>
                     </form>
 
