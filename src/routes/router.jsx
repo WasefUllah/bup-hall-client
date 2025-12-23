@@ -1,16 +1,25 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter } from "react-router-dom"; // Use react-router-dom
 import RootLayout from "../Layouts/RootLayout";
 import Home from "../Page/Home/Home/Home";
-// import { RouterProvider } from "react-router/dom";
+import Login from "../Page/Login/Login";
+import Dashboard from "../Page/Dashboard/Dashboard";
 
 export const router = createBrowserRouter([
     {
         path: "/",
-        Component: RootLayout,
+        element: <RootLayout />, // Use 'element' syntax
         children: [
             {
-                index: true,
-                Component: Home,
+                path: "/",
+                element: <Home />,
+            },
+            {
+                path: "/login",
+                element: <Login />,
+            },
+            {
+                path: "/dashboard",
+                element: <Dashboard />,
             },
         ],
     },
