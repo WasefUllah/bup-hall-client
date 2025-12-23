@@ -9,6 +9,7 @@ import HallSeatApplicationForm from "../Page/Dashboard/HallSeatApplicationForm";
 import StudentProfile from "../Page/Dashboard/StudentProfile";
 
 
+
 export const router = createBrowserRouter([
     {
         path: "/",
