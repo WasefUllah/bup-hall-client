@@ -14,6 +14,7 @@ import StatCard from "./StatCard";
 import ApplicationModal from "./ApplicationModal";
 import ComplaintsList from "./ComplaintsList";
 import AllocationsList from "./AllocationsList";
+import MealOrders from "./MealOrders";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -122,7 +123,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="flex gap-6 mb-6 border-b border-gray-200">
-                    {["seats", "allocations", "notices", "complaints"].map(
+                    {["seats", "allocations", "notices", "complaints", "mealOrders"].map(
                         (tab) => (
                             <button
                                 key={tab}
@@ -184,6 +185,8 @@ const AdminDashboard = () => {
                     {activeTab === "allocations" && (
                         <AllocationsList allocations={allocations} />
                     )}
+
+                    {activeTab === "mealOrders" && <MealOrders />}
 
                     {activeTab === "notices" && (
                         <form
