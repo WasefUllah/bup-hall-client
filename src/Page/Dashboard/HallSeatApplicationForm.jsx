@@ -10,7 +10,7 @@ export default function HallSeatApplicationForm() {
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
 
-    // SMART FEATURE: Auto-fill Name & Email from Database when form loads
+    // Auto-fill Name & Email
     useEffect(() => {
         const fetchUserData = async () => {
             if (user) {
@@ -36,7 +36,6 @@ export default function HallSeatApplicationForm() {
                 studentEmail: user?.email,
                 studentUid: user?.uid,
                 submittedAt: new Date().toISOString(),
-                // These will be filled by Admin later
                 hallName: "",
                 roomNo: "",
                 seatNumber: ""
@@ -50,7 +49,6 @@ export default function HallSeatApplicationForm() {
         }
     };
 
-    // Styles
     const sectionTitle = "text-xl font-bold text-blue-800 border-b-2 border-blue-100 pb-2 mb-4 mt-6";
     const labelStyle = "label-text font-bold text-gray-700 mb-1 block";
     const inputStyle = "input input-bordered w-full bg-white border-gray-300 focus:border-blue-600 focus:outline-none text-gray-900";
@@ -67,7 +65,6 @@ export default function HallSeatApplicationForm() {
                 </button>
 
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                    {/* Form Header */}
                     <div className="bg-blue-900 p-8 text-center">
                         <h2 className="text-3xl font-bold text-white">Hall Seat Application</h2>
                         <p className="text-blue-200 mt-2 uppercase tracking-widest text-sm">Bangladesh University of Professionals</p>
@@ -76,15 +73,15 @@ export default function HallSeatApplicationForm() {
                     <div className="p-8 md:p-10">
                         <form onSubmit={handleSubmit(onSubmit)}>
                             
-                            {/* 1. ACADEMIC INFO (Auto-Filled) */}
+                            {/* 1. ACADEMIC */}
                             <h3 className={sectionTitle}>1. Academic Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="form-control">
-                                    <label className={labelStyle}>Student Name (Auto)</label>
+                                    <label className={labelStyle}>Student Name</label>
                                     <input className={`${inputStyle} bg-gray-100 cursor-not-allowed`} readOnly {...register("studentName")} />
                                 </div>
                                 <div className="form-control">
-                                    <label className={labelStyle}>Student ID (Auto)</label>
+                                    <label className={labelStyle}>Student ID</label>
                                     <input className={`${inputStyle} bg-gray-100 cursor-not-allowed`} readOnly {...register("studentId")} />
                                 </div>
                                 <div className="form-control">
@@ -105,7 +102,7 @@ export default function HallSeatApplicationForm() {
                                 </div>
                             </div>
 
-                            {/* 2. CONTACT INFO */}
+                            {/* 2. CONTACT */}
                             <h3 className={sectionTitle}>2. Contact Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="form-control">
@@ -118,7 +115,7 @@ export default function HallSeatApplicationForm() {
                                 </div>
                             </div>
 
-                            {/* 3. PARENTS INFO */}
+                            {/* 3. PARENTS */}
                             <h3 className={sectionTitle}>3. Parents Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="form-control">
@@ -139,14 +136,22 @@ export default function HallSeatApplicationForm() {
                                 </div>
                             </div>
 
-                            {/* 4. PERMANENT ADDRESS */}
-                            <h3 className={sectionTitle}>4. Permanent Address</h3>
-                            <div className="form-control">
-                                <label className={labelStyle}>Full Address (Village/Road, District, Thana)</label>
-                                <textarea className={textareaStyle} rows="3" placeholder="e.g. House 12, Road 5, Dhanmondi, Dhaka" {...register("permanentAddress", { required: true })}></textarea>
+                            {/* 4. ADDRESSES (UPDATED) */}
+                            <h3 className={sectionTitle}>4. Address Details</h3>
+                            <div className="grid grid-cols-1 gap-6">
+                                {/* NEW: Current Address */}
+                                <div className="form-control">
+                                    <label className={labelStyle}>Current/Present Address</label>
+                                    <textarea className={textareaStyle} rows="2" placeholder="Where do you currently live?" {...register("currentAddress", { required: true })}></textarea>
+                                </div>
+                                {/* Permanent Address */}
+                                <div className="form-control">
+                                    <label className={labelStyle}>Permanent Address</label>
+                                    <textarea className={textareaStyle} rows="2" placeholder="Village, Thana, District" {...register("permanentAddress", { required: true })}></textarea>
+                                </div>
                             </div>
 
-                            {/* 5. LOCAL GUARDIAN (CRITICAL) */}
+                            {/* 5. LOCAL GUARDIAN */}
                             <h3 className={sectionTitle}>5. Local Guardian (Dhaka)</h3>
                             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
                                 <p className="text-xs text-yellow-800">
@@ -172,18 +177,10 @@ export default function HallSeatApplicationForm() {
                                 </div>
                             </div>
 
-                            {/* SUBMIT BUTTON */}
+                            {/* SUBMIT */}
                             <div className="flex justify-end pt-8 gap-4">
-                                <button 
-                                    type="button" 
-                                    onClick={() => navigate('/dashboard')}
-                                    className="btn btn-ghost btn-lg text-gray-600"
-                                >
-                                    Cancel
-                                </button>
-                                <button className="btn btn-primary btn-lg px-12 text-white shadow-xl border-none hover:bg-blue-800">
-                                    Submit Application
-                                </button>
+                                <button type="button" onClick={() => navigate('/dashboard')} className="btn btn-ghost btn-lg text-gray-600">Cancel</button>
+                                <button className="btn btn-primary btn-lg px-12 text-white shadow-xl border-none hover:bg-blue-800">Submit Application</button>
                             </div>
                         </form>
                     </div>
