@@ -34,7 +34,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex bg-white">
+        <div className="min-h-screen flex bg-white text-black">
             
             {/* LEFT SIDE: LOGIN FORM */}
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-8 md:p-12">

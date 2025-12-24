@@ -109,7 +109,7 @@ const Notices = () => {
         return () => unsub();
     }, []);
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full text-black">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Notices</h2>
             <div className="space-y-4 max-h-[400px] overflow-y-auto">
                 {notices.map(n => (
@@ -168,12 +168,12 @@ const Complaints = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-black">
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-800 mb-2">File a Complaint</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <textarea className="textarea textarea-bordered w-full h-32 bg-gray-50 focus:bg-white" placeholder="Describe issue..." value={complaintText} onChange={(e) => setComplaintText(e.target.value)} required></textarea>
-                    <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="file-input file-input-bordered file-input-sm w-full" />
+                    <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="file-input file-input-bordered file-input-sm w-full text-white" />
                     <button disabled={uploading} className="btn btn-error w-full text-white">{uploading ? "Uploading..." : "Submit"}</button>
                 </form>
             </div>

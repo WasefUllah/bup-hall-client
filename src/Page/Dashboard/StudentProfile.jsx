@@ -55,13 +55,13 @@ export default function StudentProfile() {
     }, [user]);
 
     if (loading) return <div className="text-center mt-20 text-blue-600 font-bold">Loading Profile...</div>;
-    if (!profile) return <div className="text-center mt-20">No profile found.</div>;
+    if (!profile) return <div className="text-center mt-20 text-black">No profile found.</div>;
 
     // Helper to handle missing data gracefully
     const getVal = (val) => val || "N/A";
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex justify-center items-start">
+        <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex justify-center items-start text-black">
             <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
                 
                 {/* 1. Header Section */}
