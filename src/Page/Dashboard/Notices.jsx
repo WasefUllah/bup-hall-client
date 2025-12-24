@@ -44,7 +44,7 @@ const Notices = () => {
                                 {notice.content}
                             </p>
                             
-                            {/* --- THE MISSING PART: ATTACHMENT BUTTONS --- */}
+                            {/* --- THIS IS THE PART THAT WAS MISSING --- */}
                             {url && (
                                 <div className="mt-2 animate-fade-in">
                                     {type === 'image' ? (
