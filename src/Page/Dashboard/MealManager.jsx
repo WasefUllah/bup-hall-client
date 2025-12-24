@@ -13,6 +13,14 @@ const MealManager = () => {
     const [history, setHistory] = useState([]);
     const [isLocked, setIsLocked] = useState(false);
 
+    // Monthly Stats State
+    const [monthlyStats, setMonthlyStats] = useState({ 
+        totalCost: 0, 
+        consumed: 0, 
+        missed: 0, 
+        totalPossible: 0 
+    });
+
     // Dates
     const today = new Date();
     const tomorrow = new Date(today);
@@ -24,7 +32,6 @@ const MealManager = () => {
             if (!user) return;
 
             // 1. Check if user has an APPROVED SEAT
-            // We check the 'applications' collection
             const q = query(
                 collection(db, "applications"), 
                 where("studentEmail", "==", user.email),
@@ -35,7 +42,7 @@ const MealManager = () => {
             if (appSnap.empty) {
                 setHasSeat(false);
                 setLoading(false);
-                return; // Stop here if no seat
+                return;
             }
             setHasSeat(true);
 
@@ -45,7 +52,7 @@ const MealManager = () => {
                 setIsLocked(true);
             }
 
-            // 3. Fetch Tomorrow's Order (if exists)
+            // 3. Fetch Tomorrow's Order
             const docRef = doc(db, "meals", `${tomorrowStr}_${user.email}`);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
@@ -56,18 +63,59 @@ const MealManager = () => {
             const historyQ = query(
                 collection(db, "meals"),
                 where("studentEmail", "==", user.email),
-                where("date", "<", tomorrowStr), // Past dates
+                where("date", "<", tomorrowStr), 
                 orderBy("date", "desc"),
                 limit(5)
             );
             const historySnap = await getDocs(historyQ);
             setHistory(historySnap.docs.map(d => d.data()));
+
+            // 5. FETCH MONTHLY DATA (New Feature)
+            calculateMonthlyStats(user.email);
             
             setLoading(false);
         };
 
         init();
     }, [user, tomorrowStr]);
+
+    // --- NEW: Calculate Monthly Expenses & Chart Data ---
+    const calculateMonthlyStats = async (email) => {
+        const date = new Date();
+        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
+        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+        const daysPassed = date.getDate(); // Days passed in current month
+
+        const monthQ = query(
+            collection(db, "meals"),
+            where("studentEmail", "==", email),
+            where("date", ">=", startOfMonth),
+            where("date", "<=", endOfMonth)
+        );
+
+        const snapshot = await getDocs(monthQ);
+        
+        let cost = 0;
+        let eatenCount = 0;
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(data.breakfast) { cost += 5; eatenCount++; }
+            if(data.lunch) { cost += 10; eatenCount++; }
+            if(data.dinner) { cost += 10; eatenCount++; }
+        });
+
+        // "Possible" meals = (Days passed so far) * 3 meals/day
+        const totalPossible = daysPassed * 3;
+        const missed = Math.max(0, totalPossible - eatenCount);
+
+        setMonthlyStats({
+            totalCost: cost,
+            consumed: eatenCount,
+            missed: missed,
+            totalPossible: totalPossible
+        });
+    };
 
     const handleToggle = (meal) => {
         if (isLocked) return;
@@ -85,15 +133,19 @@ const MealManager = () => {
                 timestamp: new Date()
             });
             alert("Meal order for tomorrow updated!");
+            // Refresh monthly stats to include this new order logic if needed
+            calculateMonthlyStats(user.email);
         } catch (error) {
             console.error(error);
             alert("Failed to save.");
         }
     };
 
-    // Calculation
     const calculateCost = (b, l, d) => (b ? 5 : 0) + (l ? 10 : 0) + (d ? 10 : 0);
     const totalCost = calculateCost(tomorrowData.breakfast, tomorrowData.lunch, tomorrowData.dinner);
+
+    // --- Helper for CSS Pie Chart ---
+    const consumedPercent = monthlyStats.totalPossible === 0 ? 0 : Math.round((monthlyStats.consumed / monthlyStats.totalPossible) * 100);
 
     if (loading) return <div className="p-4 text-center">Checking seat allocation...</div>;
 
@@ -108,7 +160,51 @@ const MealManager = () => {
 
     return (
         <div className="space-y-6">
-            {/* ORDER CARD */}
+            
+            {/* 1. MONTHLY SUMMARY CARD (NEW) */}
+            <div className="bg-gradient-to-r from-indigo-900 to-blue-800 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+                {/* Background Decor */}
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+
+                {/* Left: Money Stats */}
+                <div className="z-10 mb-6 md:mb-0 text-center md:text-left">
+                    <p className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">Current Month Expense</p>
+                    <h1 className="text-4xl font-extrabold mb-2">৳ {monthlyStats.totalCost}</h1>
+                    <p className="text-sm text-blue-100 opacity-80">
+                        You skipped <span className="font-bold text-white">{monthlyStats.missed}</span> meals
+                        <br/>
+                        (approx. saved ৳ {monthlyStats.missed * 8})
+                    </p>
+                </div>
+
+                {/* Right: CSS Chart */}
+                <div className="flex items-center gap-6 z-10">
+                    <div className="relative w-24 h-24 rounded-full flex items-center justify-center bg-blue-900"
+                         style={{
+                             background: `conic-gradient(#4ade80 ${consumedPercent}%, #ffffff30 ${consumedPercent}% 100%)`
+                         }}
+                    >
+                        <div className="w-20 h-20 bg-indigo-900 rounded-full flex flex-col items-center justify-center">
+                            <span className="text-lg font-bold text-green-400">{consumedPercent}%</span>
+                            <span className="text-[9px] text-gray-300 uppercase">Consumed</span>
+                        </div>
+                    </div>
+                    
+                    {/* Legend */}
+                    <div className="text-xs space-y-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                            <span>Eaten ({monthlyStats.consumed})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                            <span>Missed ({monthlyStats.missed})</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. ORDER FOR TOMORROW CARD */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-start mb-6">
                     <div>
@@ -116,7 +212,7 @@ const MealManager = () => {
                         <p className="text-sm text-gray-500">{tomorrow.toDateString()}</p>
                     </div>
                     {isLocked ? (
-                        <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Locked (Past 10 PM)</span>
+                        <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Locked</span>
                     ) : (
                         <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Open</span>
                     )}
@@ -169,7 +265,7 @@ const MealManager = () => {
                 </div>
             </div>
 
-            {/* HISTORY CARD */}
+            {/* 3. HISTORY TABLE */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 className="font-bold text-gray-700 mb-4">Recent History</h3>
                 <div className="overflow-x-auto">
